@@ -38,9 +38,9 @@ jobs:
           sdkmanager --install "platforms;android-36"
           sdkmanager --install "build-tools;36.0.0"
 
-      - name: Extract Phase 2 Project
+      - name: Extract Phase 3 Project
         run: |
-          unzip -q LexiMemo_Phase2_BugFix.zip -d .
+          unzip -q LexiMemo_Phase3_Dashboard.zip -d .
 
       - name: Build Debug APK
         run: |
@@ -49,6 +49,6 @@ jobs:
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: LexiMemo-Phase2-Debug-APK
+          name: LexiMemo-Phase3-Debug-APK
           path: LexiMemo/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
