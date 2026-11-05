@@ -14,7 +14,7 @@ on:
       zip_file:
         description: 'Project ZIP filename in repository root'
         required: true
-        default: 'LexiMemo-Phase7-RandomTest-Scroll-Hint-Fix.zip'
+        default: 'LexiMemo-Phase8-Settings-Theme-Backup-Restore.zip'
         type: string
 
 permissions:
