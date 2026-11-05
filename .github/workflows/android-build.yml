@@ -1,144 +1,142 @@
 name: LexiMemo Android APK Build
 
 on:
-push:
-branches:
-- main
-- master
-paths:
-- '*.zip'
-- '.github/workflows/**'
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - '*.zip'
+      - '.github/workflows/**'
 
-workflow_dispatch:
-inputs:
-zip_file:
-description: 'Project ZIP filename in repository root'
-required: true
-default: 'LexiMemo-Phase7-Navigation-Updated.zip'
-type: string
+  workflow_dispatch:
+    inputs:
+      zip_file:
+        description: 'Project ZIP filename in repository root'
+        required: true
+        default: 'LexiMemo-Phase7-Navigation-Updated.zip'
+        type: string
 
 permissions:
-contents: read
+  contents: read
 
 jobs:
-build:
-name: Build LexiMemo Debug APK
-runs-on: ubuntu-latest
+  build:
+    name: Build LexiMemo Debug APK
+    runs-on: ubuntu-latest
 
-steps:
-  - name: Checkout Repository
-    uses: actions/checkout@v4
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-  - name: Set Up JDK 17
-    uses: actions/setup-java@v4
-    with:
-      distribution: temurin
-      java-version: '17'
-      cache: gradle
+      - name: Set Up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
 
-  - name: Set Up Android SDK
-    uses: android-actions/setup-android@v3
+      - name: Set Up Android SDK
+        uses: android-actions/setup-android@v3
 
-  - name: Install Android SDK Components
-    run: |
-      sdkmanager --install \
-        "platform-tools" \
-        "platforms;android-36" \
-        "build-tools;36.0.0"
+      - name: Install Android SDK Components
+        run: |
+          sdkmanager --install \
+            "platform-tools" \
+            "platforms;android-36" \
+            "build-tools;36.0.0"
 
-  - name: Locate Project ZIP
-    id: project
-    shell: bash
-    run: |
-      ZIP_FILE="${{ inputs.zip_file || 'LexiMemo-Phase7-Navigation-Updated.zip' }}"
+      - name: Locate Project ZIP
+        id: project
+        shell: bash
+        env:
+          ZIP_FILE: ${{ github.event_name == 'workflow_dispatch' && inputs.zip_file || 'LexiMemo-Phase7-Navigation-Updated.zip' }}
+        run: |
+          if [ ! -f "$ZIP_FILE" ]; then
+            echo "::error::Project ZIP not found: $ZIP_FILE"
+            echo "Available ZIP files:"
+            ls -la *.zip || true
+            exit 1
+          fi
 
-      if [ ! -f "$ZIP_FILE" ]; then
-        echo "::error::Project ZIP not found: $ZIP_FILE"
-        echo "Available ZIP files:"
-        ls -la *.zip || true
-        exit 1
-      fi
+          echo "zip_file=$ZIP_FILE" >> "$GITHUB_OUTPUT"
 
-      echo "zip_file=$ZIP_FILE" >> "$GITHUB_OUTPUT"
+      - name: Extract Project ZIP
+        run: |
+          mkdir -p extracted
+          unzip -q "${{ steps.project.outputs.zip_file }}" -d extracted
 
-  - name: Extract Project ZIP
-    run: |
-      mkdir -p extracted
+          echo "Extracted project structure:"
+          find extracted -maxdepth 3 -type f | head -100
 
-      unzip -q "${{ steps.project.outputs.zip_file }}" -d extracted
+      - name: Verify Android Project
+        id: verify
+        shell: bash
+        run: |
+          PROJECT_DIR="extracted/LexiMemo"
 
-      echo "Extracted project structure:"
-      find extracted -maxdepth 3 -type f | head -100
+          if [ ! -f "$PROJECT_DIR/settings.gradle.kts" ]; then
+            echo "::error::LexiMemo project root not found."
+            exit 1
+          fi
 
-  - name: Verify Android Project
-    id: verify
-    shell: bash
-    run: |
-      PROJECT_DIR="extracted/LexiMemo"
+          if [ ! -f "$PROJECT_DIR/app/build.gradle.kts" ]; then
+            echo "::error::Android app Gradle file missing."
+            exit 1
+          fi
 
-      if [ ! -f "$PROJECT_DIR/settings.gradle.kts" ]; then
-        echo "::error::LexiMemo project root not found."
-        exit 1
-      fi
+          echo "project_dir=$PROJECT_DIR" >> "$GITHUB_OUTPUT"
+          echo "Project verification successful."
 
-      if [ ! -f "$PROJECT_DIR/app/build.gradle.kts" ]; then
-        echo "::error::Android app Gradle file missing."
-        exit 1
-      fi
+      - name: Set Up Gradle 8.13
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
 
-      echo "project_dir=$PROJECT_DIR" >> "$GITHUB_OUTPUT"
+      - name: Verify Build Environment
+        run: |
+          java -version
+          gradle --version
+          sdkmanager --list_installed
 
-      echo "Project verification successful."
+      - name: Build Debug APK
+        run: |
+          gradle --no-daemon \
+            -p "${{ steps.verify.outputs.project_dir }}" \
+            assembleDebug \
+            --stacktrace
 
-  - name: Set Up Gradle 8.13
-    uses: gradle/actions/setup-gradle@v4
-    with:
-      gradle-version: '8.13'
+      - name: Verify APK
+        id: apk
+        shell: bash
+        run: |
+          APK_PATH="${{ steps.verify.outputs.project_dir }}/app/build/outputs/apk/debug/app-debug.apk"
 
-  - name: Verify Build Environment
-    run: |
-      java -version
-      gradle --version
-      sdkmanager --list_installed
+          if [ ! -f "$APK_PATH" ]; then
+            echo "::error::APK file was not generated."
+            exit 1
+          fi
 
-  - name: Build Debug APK
-    run: |
-      gradle --no-daemon \
-        -p "${{ steps.verify.outputs.project_dir }}" \
-        assembleDebug \
-        --stacktrace
+          echo "apk_path=$APK_PATH" >> "$GITHUB_OUTPUT"
 
-  - name: Verify APK
-    id: apk
-    shell: bash
-    run: |
-      APK_PATH="${{ steps.verify.outputs.project_dir }}/app/build/outputs/apk/debug/app-debug.apk"
+          ls -lh "$APK_PATH"
+          sha256sum "$APK_PATH"
 
-      if [ ! -f "$APK_PATH" ]; then
-        echo "::error::APK file was not generated."
-        exit 1
-      fi
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: LexiMemo-Debug-APK
+          path: ${{ steps.apk.outputs.apk_path }}
+          if-no-files-found: error
+          retention-days: 14
 
-      echo "apk_path=$APK_PATH" >> "$GITHUB_OUTPUT"
-
-      ls -lh "$APK_PATH"
-      sha256sum "$APK_PATH"
-
-  - name: Upload Debug APK
-    uses: actions/upload-artifact@v4
-    with:
-      name: LexiMemo-Debug-APK
-      path: ${{ steps.apk.outputs.apk_path }}
-      if-no-files-found: error
-      retention-days: 14
-
-  - name: Upload Build Reports
-    if: always()
-    uses: actions/upload-artifact@v4
-    with:
-      name: LexiMemo-Build-Reports
-      path: |
-        extracted/LexiMemo/app/build/reports/
-        extracted/LexiMemo/app/build/outputs/logs/
-      if-no-files-found: ignore
-      retention-days: 7
+      - name: Upload Build Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: LexiMemo-Build-Reports
+          path: |
+            extracted/LexiMemo/app/build/reports/
+            extracted/LexiMemo/app/build/outputs/logs/
+          if-no-files-found: ignore
+          retention-days: 7
