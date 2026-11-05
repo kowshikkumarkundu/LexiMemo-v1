@@ -14,7 +14,7 @@ on:
       zip_file:
         description: 'Project ZIP filename in repository root'
         required: true
-        default: 'LexiMemo-Phase9-Corrections-Import-Fix.zip'
+        default: 'LexiMemo_Final_app_v1.zip'
         type: string
 
 permissions:
