@@ -14,7 +14,7 @@ on:
       zip_file:
         description: 'Project ZIP filename in repository root'
         required: true
-        default: 'LexiMemo-Phase8-Settings-Theme-Backup-Restore.zip'
+        default: 'LexiMemo-Phase9-Corrections-Icon-Target-Search-Revision.zip'
         type: string
 
 permissions:
