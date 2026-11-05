@@ -38,16 +38,9 @@ jobs:
           sdkmanager --install "platforms;android-36"
           sdkmanager --install "build-tools;36.0.0"
 
-      - name: Extract Project ZIP
+      - name: Extract Phase 2 Project
         run: |
-          unzip -q LexiMemo_Phase1_Foundation_Fixed.zip -d .
-
-      - name: Fix Dependency Compatibility
-        run: |
-          find LexiMemo -type f \( -name "*.toml" -o -name "*.kts" \) -exec sed -i \
-            -e 's/2026.09.00/2026.06.01/g' \
-            -e 's/2.10.1/2.9.6/g' \
-            -e 's/2.11.0/2.10.0/g' {} +
+          unzip -q LexiMemo_Phase2_AddWord.zip -d .
 
       - name: Build Debug APK
         run: |
@@ -56,6 +49,6 @@ jobs:
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: LexiMemo-Debug-APK
+          name: LexiMemo-Phase2-Debug-APK
           path: LexiMemo/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
