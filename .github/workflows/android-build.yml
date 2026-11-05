@@ -14,7 +14,7 @@ on:
       zip_file:
         description: 'Project ZIP filename in repository root'
         required: true
-        default: 'LexiMemo-Phase7-Navigation-Updated.zip'
+        default: 'LexiMemo-Phase7-Image-Tap-Hint-Fix.zip'
         type: string
 
 permissions:
@@ -76,7 +76,7 @@ jobs:
         id: project
         shell: bash
         env:
-          ZIP_FILE: ${{ github.event_name == 'workflow_dispatch' && inputs.zip_file || 'LexiMemo-Phase7-Navigation-Updated.zip' }}
+          ZIP_FILE: ${{ github.event_name == 'workflow_dispatch' && inputs.zip_file || 'LexiMemo-Phase7-Image-Tap-Hint-Fix.zip' }}
         run: |
           if [ ! -f "$ZIP_FILE" ]; then
             echo "::error::Project ZIP not found: $ZIP_FILE"
@@ -86,13 +86,12 @@ jobs:
           fi
 
           echo "zip_file=$ZIP_FILE" >> "$GITHUB_OUTPUT"
-          echo "Using project ZIP: $ZIP_FILE"
+          echo "Using ZIP: $ZIP_FILE"
 
       - name: Extract Project ZIP
         shell: bash
         run: |
           mkdir -p extracted
-
           unzip -q "${{ steps.project.outputs.zip_file }}" -d extracted
 
           echo "Extracted project structure:"
