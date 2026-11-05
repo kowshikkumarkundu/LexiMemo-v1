@@ -14,7 +14,7 @@ on:
       zip_file:
         description: 'Project ZIP filename in repository root'
         required: true
-        default: 'LexiMemo-Phase7-Image-Tap-Hint-Fix.zip'
+        default: 'LexiMemo-Phase7-RandomTest-Scroll-Hint-Fix.zip'
         type: string
 
 permissions:
