@@ -40,7 +40,7 @@ jobs:
 
       - name: Extract Project ZIP
         run: |
-          unzip -q LexiMemo_Phase1_Foundation.zip -d .
+          unzip -q LexiMemo_Phase1_Foundation_Fixed.zip -d .
 
       - name: Fix Dependency Compatibility
         run: |
