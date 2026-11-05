@@ -42,6 +42,10 @@ jobs:
         run: |
           unzip -q LexiMemo_Phase1_Foundation.zip -d .
 
+      - name: Fix Compose BOM Compatibility
+        run: |
+          grep -RIl "2026.09.00" LexiMemo --include="*.toml" --include="*.kts" | xargs -r sed -i 's/2026.09.00/2026.06.01/g'
+
       - name: Build Debug APK
         run: |
           gradle --no-daemon -p LexiMemo assembleDebug
