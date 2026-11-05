@@ -86,6 +86,7 @@ jobs:
           fi
 
           echo "zip_file=$ZIP_FILE" >> "$GITHUB_OUTPUT"
+          echo "Using project ZIP: $ZIP_FILE"
 
       - name: Extract Project ZIP
         shell: bash
@@ -114,7 +115,6 @@ jobs:
           fi
 
           echo "project_dir=$PROJECT_DIR" >> "$GITHUB_OUTPUT"
-
           echo "Project verification successful."
 
       - name: Set Up Gradle 8.13
