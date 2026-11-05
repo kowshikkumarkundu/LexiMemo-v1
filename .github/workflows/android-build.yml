@@ -25,6 +25,10 @@ jobs:
     name: Build LexiMemo Debug APK
     runs-on: ubuntu-latest
 
+    env:
+      ANDROID_HOME: /usr/local/lib/android/sdk
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -35,12 +39,33 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Set Up Android SDK
-        uses: android-actions/setup-android@v3
+      - name: Locate Android SDK Tools
+        id: android
+        shell: bash
+        run: |
+          SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" \
+            -mindepth 2 -maxdepth 2 \
+            -type f -name sdkmanager | sort -V | tail -n 1)"
+
+          if [ -z "$SDKMANAGER" ]; then
+            echo "::error::Android SDK sdkmanager not found."
+            exit 1
+          fi
+
+          echo "sdkmanager=$SDKMANAGER" >> "$GITHUB_OUTPUT"
+          echo "$(dirname "$SDKMANAGER")" >> "$GITHUB_PATH"
+          echo "$ANDROID_HOME/platform-tools" >> "$GITHUB_PATH"
+
+          echo "Using: $SDKMANAGER"
 
       - name: Install Android SDK Components
+        shell: bash
         run: |
-          sdkmanager --install \
+          SDKMANAGER="${{ steps.android.outputs.sdkmanager }}"
+
+          yes | "$SDKMANAGER" --licenses || true
+
+          "$SDKMANAGER" --install \
             "platform-tools" \
             "platforms;android-36" \
             "build-tools;36.0.0"
