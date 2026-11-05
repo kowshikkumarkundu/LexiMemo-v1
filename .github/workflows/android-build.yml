@@ -42,7 +42,7 @@ jobs:
 
       - name: Extract Phase 6 Project
         run: |
-          unzip -q LexiMemo_Phase6_Dictionary_Collections.zip -d .
+          unzip -q LexiMemo_Phase6_Dictionary_BugFix.zip -d .
 
       - name: Verify Gradle Project
         run: |
