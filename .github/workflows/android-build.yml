@@ -14,7 +14,7 @@ on:
       zip_file:
         description: 'Project ZIP filename in repository root'
         required: true
-        default: 'LexiMemo_Final_app_v1.zip'
+        default: 'LexiMemo-Dictionary-Revision-AddWord-UI-Fixes.zip'
         type: string
 
 permissions:
