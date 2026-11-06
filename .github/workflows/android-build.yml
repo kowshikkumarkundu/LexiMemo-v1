@@ -14,7 +14,7 @@ on:
       zip_file:
         description: 'Project ZIP filename in repository root'
         required: true
-        default: 'LexiMemo-UI-Fixes-v2.zip'
+        default: 'LexiMemo-UI-Fixes-v3.zip'
         type: string
 
 permissions:
